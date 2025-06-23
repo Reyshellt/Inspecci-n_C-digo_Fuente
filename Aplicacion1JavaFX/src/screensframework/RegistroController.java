@@ -85,7 +85,7 @@ public class RegistroController implements Initializable, ControlledScreen {
     }
     
     @FXML
-    private void registroUsuario(ActionEvent event){
+    public void registroUsuario(ActionEvent event){
         
         //______________________________________________________________
         // VALIDACIONES
@@ -162,7 +162,7 @@ public class RegistroController implements Initializable, ControlledScreen {
     }
     
     @FXML
-    private void regresarPrincipal(ActionEvent event) {
+    public void regresarPrincipal(ActionEvent event) {
         tfAddNombre.setText("");
         tfAddApellido.setText("");
         tfAddCorreo.setText("");

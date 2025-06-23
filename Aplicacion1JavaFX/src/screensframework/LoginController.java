@@ -18,7 +18,7 @@ import javafx.scene.control.TextField;
 import javax.swing.JOptionPane;
 import screensframework.DBConnect.DBConnection;
 import org.apache.commons.codec.digest.DigestUtils;
-
+import java.sql.PreparedStatement;
 /**
  * FXML Controller class
  *
@@ -50,14 +50,14 @@ public class LoginController implements Initializable, ControlledScreen {
         /********************************** 
          *         Area de validaciones 
          ***********************************/
-        if (!validation.validarVacios(tfUsuario.getText(), "USUARIO")) {
-            return;
-        }
-        
-        
-        if (!validation.validarMaximo(tfUsuario.getText(), "USUARIO", 20, 2)) {
-            return;
-        }
+//        if (!validation.validarVacios(tfUsuario.getText(), "USUARIO")) {
+//            return;
+//        }
+//
+//
+//        if (!validation.validarMaximo(tfUsuario.getText(), "USUARIO", 20, 2)) {
+//            return;
+//        }
         
         /********************************** 
          *     Fin de las validaciones 
@@ -65,36 +65,104 @@ public class LoginController implements Initializable, ControlledScreen {
         
         //______________________________________________________
         /* SE HACE EL LLAMADO AL MODELO PARA ENTRAR AL SISTEMA */
+//        try {
+//            conexion = DBConnection.connect();
+//            String sql = "SELECT * FROM "
+//                    + " usuarios WHERE "
+//                    + " usuario = '"+tfUsuario.getText()+"' AND "
+//                    + " pass = '"+DigestUtils.sha1Hex(tfPass.getText())+"'";
+//            ResultSet rs = conexion.createStatement().executeQuery(sql);
+//
+//            boolean existeUsuario = rs.next();
+//
+//            if (existeUsuario) {
+//                tfUsuario.setText("");
+//                tfPass.setText("");
+//                controlador.setScreen(ScreensFramework.contenidoID);
+//            } else {
+//                JOptionPane.showMessageDialog(null, "Este usuario no está registrado");
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Error " + e.getMessage());
+//        }
+        /**********************************
+         *     Nuevo modelo Refactorizado
+         ***********************************/
+        if (!validarCampos()) {
+            return;
+        }
+
         try {
-            conexion = DBConnection.connect();
-            String sql = "SELECT * FROM "
-                    + " usuarios WHERE "
-                    + " usuario = '"+tfUsuario.getText()+"' AND "
-                    + " pass = '"+DigestUtils.sha1Hex(tfPass.getText())+"'";
-            ResultSet rs = conexion.createStatement().executeQuery(sql);
-            
-            boolean existeUsuario = rs.next();
-            
-            if (existeUsuario) {
-                tfUsuario.setText("");
-                tfPass.setText("");
-                controlador.setScreen(ScreensFramework.contenidoID);
+            if (autenticarUsuario(tfUsuario.getText(), tfPass.getText())) {
+                limpiarCampos();
+                navegarAPantalla(ScreensFramework.contenidoID);
             } else {
-                JOptionPane.showMessageDialog(null, "Este usuario no está registrado");
+                mostrarMensaje("Este usuario no está registrado");
             }
-            
         } catch (SQLException e) {
-            System.out.println("Error " + e.getMessage());
+            manejarErrorBD(e);
         }
     }
+    protected boolean validarCampos() {
+        return validation.validarVacios(tfUsuario.getText(), "USUARIO")
+                && validation.validarMaximo(tfUsuario.getText(), "USUARIO", 20, 2);
+    }
+
+    protected boolean autenticarUsuario(String usuario, String password) throws SQLException {
+        conexion = DBConnection.connect();
+        String sql = "SELECT COUNT(*) FROM usuarios WHERE usuario = ? AND pass = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, usuario);
+            stmt.setString(2, DigestUtils.sha1Hex(password));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+
+    protected void limpiarCampos() {
+        tfUsuario.setText("");
+        tfPass.setText("");
+    }
+
+    protected void navegarAPantalla(String pantallaID) {
+        controlador.setScreen(pantallaID);
+    }
+
+    protected void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+
+    protected void manejarErrorBD(SQLException e) {
+        System.out.println("Error " + e.getMessage());
+    }
+
+    /// /////
     
+//    @FXML
+//    private void irFormRegistro(ActionEvent event) {
+//        controlador.setScreen(ScreensFramework.registroID);
+//    }
+//
+//    @FXML
+//    private void salir(ActionEvent event) {
+//        Platform.exit();
+//    }
+
+
     @FXML
     private void irFormRegistro(ActionEvent event) {
-        controlador.setScreen(ScreensFramework.registroID);
+        navegarAPantalla(ScreensFramework.registroID);
     }
-    
+
     @FXML
     private void salir(ActionEvent event) {
         Platform.exit();
+    }
+
+    // Setters para inyección en pruebas
+    public void setValidation(Validaciones validation) {
+        this.validation = validation;
     }
 }

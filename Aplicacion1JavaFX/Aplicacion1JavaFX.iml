@@ -10,7 +10,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="librerias" level="project" />
     <orderEntry type="library" exported="" name="lib" level="project" />
-    <orderEntry type="library" name="junit.jupiter" level="project" />
-    <orderEntry type="library" name="mockito.junit.jupiter" level="project" />
+    <orderEntry type="library" exported="" name="junit.jupiter" level="project" />
+    <orderEntry type="library" exported="" name="mockito.junit.jupiter" level="project" />
+    <orderEntry type="library" exported="" name="Aplicacion1JavaFX" level="project" />
   </component>
 </module>
